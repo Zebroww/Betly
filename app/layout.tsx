@@ -12,6 +12,7 @@ const inter = Inter({ subsets: ["latin"] })
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const token = cookies().get("auth-token")?.value
 
+
    return (
     <html lang="en">
       <body className={inter.className}>
