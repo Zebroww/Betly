@@ -16,9 +16,15 @@ export async function GET(request: NextRequest) {
 
     // Get pending withdrawals
     const pendingWithdrawals = await db.transactions.findByType(auth.userId, "withdrawal")
-    const pendingAmount = pendingWithdrawals
+    const pendingWithdrawalAmount = pendingWithdrawals
       .filter((t) => t.status === "pending")
       .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+
+    // Get pending bets and calculate their total stake value
+    const pendingBets = await db.bets.findByUserId(auth.userId)
+    const pendingBetsValue = pendingBets
+      .filter((bet) => bet.status === "pending")
+      .reduce((sum, bet) => sum + bet.stake, 0)
 
     // Calculate total deposited and withdrawn
     const deposits = await db.transactions.findByType(auth.userId, "deposit")
@@ -33,7 +39,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       balance: user.balance,
       bonusBalance: user.bonusBalance,
-      pendingWithdrawals: pendingAmount,
+      pendingWithdrawals: pendingWithdrawalAmount,
+      pendingBetsValue: pendingBetsValue, // This is the actual pending bets value
       totalDeposited,
       totalWithdrawn,
       availableForWithdrawal: user.balance,

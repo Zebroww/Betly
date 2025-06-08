@@ -1,10 +1,16 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff } from "lucide-react"
@@ -15,37 +21,37 @@ interface LoginFormProps {
 
 export function LoginForm({ onToggleMode }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+  const router = useRouter()
 
-  try {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    })
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
 
-    const data = await res.json()
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
 
-    if (!res.ok) {
-      alert(data.message || "Login failed")
-      return
+      if (res.ok) {
+        router.push("/dashboard")
+      } else {
+        const data = await res.json()
+        alert(data.error || "Login failed")
+      }
+    } catch (err) {
+      alert("Something went wrong")
+    } finally {
+      setLoading(false)
     }
-
-    alert("Login successful!")
-    
-  } catch (error) {
-    console.error("Login error:", error)
-    alert("An error occurred. Please try again.")
   }
-}
 
   return (
     <Card className="w-full max-w-md">
@@ -64,6 +70,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -76,6 +83,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
+                disabled={loading}
               />
               <Button
                 type="button"
@@ -90,8 +98,12 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
-            Sign In
+          <Button
+            type="submit"
+            className="w-full bg-green-600 hover:bg-green-700"
+            disabled={loading}
+          >
+            {loading ? "Signing In..." : "Sign In"}
           </Button>
           <div className="text-center text-sm">
             Don't have an account?{" "}
