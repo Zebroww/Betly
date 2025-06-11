@@ -1,6 +1,5 @@
 import { ReactNode } from "react"
 import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarTrigger } from "@/components/ui/sidebar"

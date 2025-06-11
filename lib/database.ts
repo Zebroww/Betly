@@ -12,6 +12,15 @@ export interface DatabaseUser {
   bonusBalance: number
   stripeCustomerId?: string
   createdAt: Date
+  phone?: string
+  dateOfBirth?: string
+  address?: string
+  city?: string
+  country?: string
+  bio?: string
+  timezone?: string
+  isVerified?: boolean
+  accountLevel?: string
 }
 
 export interface DatabaseBet {
@@ -66,6 +75,7 @@ export interface DatabasePaymentMethod {
   }
 }
 
+// Helper function to convert MongoDB document to our format
 function convertDocument<T extends { _id?: ObjectId; id?: string }>(doc: T): T {
   if (doc._id) {
     doc.id = doc._id.toString()
@@ -109,6 +119,19 @@ export const db = {
       }
 
       await db.collection("users").updateOne({ _id: new ObjectId(userId) }, { $set: updateData })
+    },
+
+    updateProfile: async (userId: string, updates: Partial<DatabaseUser>): Promise<void> => {
+      const { db } = await connectToDatabase()
+
+      // Convert email to lowercase if provided
+      if (updates.email) {
+        updates.email = updates.email.toLowerCase()
+      }
+
+      await db
+        .collection("users")
+        .updateOne({ _id: new ObjectId(userId) }, { $set: { ...updates, updatedAt: new Date() } })
     },
 
     updateStripeCustomerId: async (userId: string, stripeCustomerId: string): Promise<void> => {
@@ -223,6 +246,7 @@ export const db = {
     create: async (methodData: Omit<DatabasePaymentMethod, "_id" | "id">): Promise<DatabasePaymentMethod> => {
       const { db } = await connectToDatabase()
 
+      // If this is set as default, unset all other defaults for this user
       if (methodData.isDefault) {
         await db.collection("paymentMethods").updateMany({ userId: methodData.userId }, { $set: { isDefault: false } })
       }
@@ -257,10 +281,10 @@ export const db = {
     setDefault: async (id: string, userId: string): Promise<boolean> => {
       const { db } = await connectToDatabase()
 
-
+      // First, unset all defaults for this user
       await db.collection("paymentMethods").updateMany({ userId }, { $set: { isDefault: false } })
 
-
+      // Then set the specified method as default
       const result = await db
         .collection("paymentMethods")
         .updateOne({ _id: new ObjectId(id), userId }, { $set: { isDefault: true } })

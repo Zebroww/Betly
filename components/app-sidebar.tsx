@@ -42,7 +42,7 @@ const menuItems = [
   },
   {
     title: "Statistics",
-    url: "#",
+    url: "/bets?tab=analytics",
     icon: BarChart3,
   },
 ]
@@ -50,12 +50,12 @@ const menuItems = [
 const accountItems = [
   {
     title: "Profile",
-    url: "#",
+    url: "/profile",
     icon: User,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/settings",
     icon: Settings,
   },
 ]
@@ -182,4 +182,3 @@ export function AppSidebar() {
     </Sidebar>
   )
 }
-export default AppSidebar
